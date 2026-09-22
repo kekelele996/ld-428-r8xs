@@ -9,7 +9,7 @@ export class InteractionController {
 
   @Get()
   async list(@Query() query: { targetType?: string; targetId?: string }) {
-    return this.interactionService.list(query);
+    return ok(await this.interactionService.list(query));
   }
 
   @Post()

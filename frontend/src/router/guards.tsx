@@ -1,11 +1,11 @@
 import { Navigate } from 'react-router-dom';
 
-type Role = 'Admin' | 'Curator' | 'Artist' | 'Viewer';
+import { useAuthStore } from '../stores/authStore';
+import type { UserRole } from '../types/enums';
 
-const currentRole: Role = 'Artist';
-
-export function RequireRole({ allow, children }: { allow: Role[]; children: JSX.Element }) {
-  if (!allow.includes(currentRole)) {
+export function RequireRole({ allow, children }: { allow: UserRole[]; children: JSX.Element }) {
+  const role = useAuthStore((state) => state.user.role);
+  if (!allow.includes(role)) {
     return <Navigate to="/gallery" replace />;
   }
   return children;

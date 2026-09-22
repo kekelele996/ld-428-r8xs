@@ -3,4 +3,7 @@ export const apiPaths = {
   exhibitions: '/api/exhibitions',
   artists: '/api/artists',
   interactions: '/api/interactions',
+  reviews: '/api/reviews',
+  withdrawals: '/api/withdrawals',
+  authToken: '/api/auth/token',
 };

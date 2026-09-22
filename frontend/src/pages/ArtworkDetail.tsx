@@ -5,9 +5,12 @@ import { Link, useParams } from 'react-router-dom';
 import { ArtworkCard } from '../components/common/ArtworkCard';
 import { CommentSection } from '../components/common/CommentSection';
 import { InteractionBar } from '../components/common/InteractionBar';
+import { ReviewStatusBadge } from '../components/common/StatusBadge';
 import { UserAvatar } from '../components/common/UserAvatar';
 import { useArtistStore } from '../stores/artistStore';
 import { useArtworkStore } from '../stores/artworkStore';
+import { useAuthStore } from '../stores/authStore';
+import { ArtworkReviewStatus, ArtworkStatus } from '../types/enums';
 import { formatArtworkSize } from '../utils/formatArtworkSize';
 
 export function ArtworkDetail() {
@@ -15,6 +18,7 @@ export function ArtworkDetail() {
   const [zoomed, setZoomed] = useState(false);
   const { artworks, loadArtworks } = useArtworkStore();
   const { artists, loadArtists } = useArtistStore();
+  const role = useAuthStore((state) => state.user.role);
 
   useEffect(() => {
     void Promise.all([loadArtworks(), loadArtists()]);
@@ -22,7 +26,15 @@ export function ArtworkDetail() {
 
   const artwork = artworks.find((item) => item.id === id);
   const artist = artwork ? artists.find((item) => item.id === artwork.artistId) : undefined;
-  const related = artwork ? artworks.filter((item) => item.artistId === artwork.artistId && item.id !== artwork.id) : [];
+  const related = artwork
+    ? artworks.filter(
+        (item) =>
+          item.artistId === artwork.artistId &&
+          item.id !== artwork.id &&
+          (staff || (item.status === ArtworkStatus.Published && item.reviewStatus === ArtworkReviewStatus.Approved)),
+      )
+    : [];
+  const staff = role === 'Admin' || role === 'Curator' || role === 'Artist';
 
   if (!artwork) {
     return <main className="page-shell p-10">作品不存在</main>;
@@ -41,6 +53,21 @@ export function ArtworkDetail() {
             <div>
               <p className="text-sm uppercase tracking-[0.25em] text-clay">{artwork.medium}</p>
               <h1 className="mt-3 font-display text-6xl leading-none">{artwork.title}</h1>
+              {staff && (
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <ReviewStatusBadge status={artwork.reviewStatus} />
+                  {artwork.activeExhibitionId && (
+                    <Link to={`/exhibition/${artwork.activeExhibitionId}`} className="text-xs text-lapis hover:underline">
+                      正在 {artwork.activeExhibitionId} 展出
+                    </Link>
+                  )}
+                </div>
+              )}
+              {staff && artwork.reviewStatus === ArtworkReviewStatus.Rejected && artwork.reviewComment && (
+                <p className="mt-3 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+                  退回原因：{artwork.reviewComment}
+                </p>
+              )}
               <p className="mt-5 text-lg leading-8 text-ink/70">{artwork.description}</p>
             </div>
             {artist && <UserAvatar artist={artist} />}

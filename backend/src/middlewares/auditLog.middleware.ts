@@ -12,12 +12,17 @@ export class AuditLogMiddleware implements NestMiddleware {
   use(req: Request & { user?: { id?: string } }, res: Response, next: NextFunction) {
     res.on('finish', () => {
       if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-        void this.auditModel.create({
-          actorId: req.user?.id ?? 'anonymous',
-          action: `${req.method} ${res.statusCode}`,
-          path: req.path,
-          method: req.method,
-        });
+        void this.auditModel
+          .create({
+            actorId: req.user?.id ?? 'anonymous',
+            action: `${req.method} ${res.statusCode}`,
+            path: req.path,
+            method: req.method,
+          })
+          .catch((error) => {
+            // 审计写失败不应影响主请求，仅记录错误。
+            process.stderr.write(`audit log write failed: ${String(error)}\n`);
+          });
       }
     });
     next();

@@ -20,8 +20,10 @@ export enum Medium {
 
 export enum ExhibitionStatus {
   Planning = 'Planning',
+  PendingReview = 'PendingReview',
   Active = 'Active',
   Ended = 'Ended',
+  Rejected = 'Rejected',
   Archived = 'Archived',
 }
 
@@ -43,3 +45,26 @@ export enum ArtistStatus {
   Active = 'Active',
   Inactive = 'Inactive',
 }
+
+/** 作品上展审核状态 */
+export enum ArtworkReviewStatus {
+  Unsubmitted = 'Unsubmitted',
+  PendingReview = 'PendingReview',
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+}
+
+export enum ReviewResult {
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+  Flagged = 'Flagged',
+}
+
+/** 作品撤出进行中展览的原因 */
+export enum WithdrawalReason {
+  ArtworkRejected = 'ArtworkRejected',
+  ArtworkTakenDown = 'ArtworkTakenDown',
+  ApprovalOverturned = 'ApprovalOverturned',
+}
+
+export type UserRole = 'Admin' | 'Curator' | 'Artist' | 'Viewer';

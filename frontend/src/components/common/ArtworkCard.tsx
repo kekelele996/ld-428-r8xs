@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import type { Artist, Artwork } from '../../types';
 import { formatArtworkSize } from '../../utils/formatArtworkSize';
-import { StatusBadge } from './StatusBadge';
+import { ReviewStatusBadge, StatusBadge } from './StatusBadge';
 
 export function ArtworkCard({ artwork, artist, compact = false }: { artwork: Artwork; artist?: Artist; compact?: boolean }) {
   return (
@@ -18,7 +18,10 @@ export function ArtworkCard({ artwork, artist, compact = false }: { artwork: Art
               <h3 className="font-display text-xl text-ink group-hover:text-clay">{artwork.title}</h3>
               <p className="mt-1 text-sm text-ink/60">{artist?.artistName ?? 'Unknown'} · {artwork.year}</p>
             </div>
-            <StatusBadge status={artwork.status} />
+            <div className="flex flex-col items-end gap-1">
+              <StatusBadge status={artwork.status} />
+              <ReviewStatusBadge status={artwork.reviewStatus} />
+            </div>
           </div>
           <p className="mt-3 line-clamp-2 text-sm text-ink/70">{artwork.description}</p>
           <div className="mt-4 flex items-center justify-between text-xs uppercase tracking-wide text-ink/55">

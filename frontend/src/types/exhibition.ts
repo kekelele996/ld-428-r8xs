@@ -11,5 +11,6 @@ export interface Exhibition {
   coverUrl: string;
   artworkIds: string[];
   status: ExhibitionStatus;
+  reviewComment?: string;
   visitors: number;
 }

@@ -6,7 +6,9 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { UserAvatar } from '../components/common/UserAvatar';
 import { useArtistStore } from '../stores/artistStore';
 import { useArtworkStore } from '../stores/artworkStore';
+import { useAuthStore } from '../stores/authStore';
 import { useExhibitionStore } from '../stores/exhibitionStore';
+import { ArtworkReviewStatus, ArtworkStatus, ExhibitionStatus } from '../types/enums';
 import { useEffect } from 'react';
 
 export function ArtistProfile() {
@@ -14,14 +16,24 @@ export function ArtistProfile() {
   const { artists, loadArtists } = useArtistStore();
   const { artworks, loadArtworks } = useArtworkStore();
   const { exhibitions, loadExhibitions } = useExhibitionStore();
+  const role = useAuthStore((state) => state.user.role);
 
   useEffect(() => {
     void Promise.all([loadArtists(), loadArtworks(), loadExhibitions()]);
   }, [loadArtists, loadArtworks, loadExhibitions]);
 
+  const isViewer = role === 'Viewer';
   const artist = artists.find((item) => item.id === id);
-  const artistArtworks = artworks.filter((item) => item.artistId === id);
-  const artistExhibitions = exhibitions.filter((item) => item.curatorId === id || item.artworkIds.some((artId) => artistArtworks.some((art) => art.id === artId)));
+  const allArtistArtworks = artworks.filter((item) => item.artistId === id);
+  const artistArtworks = isViewer
+    ? allArtistArtworks.filter((item) => item.status === ArtworkStatus.Published && item.reviewStatus === ArtworkReviewStatus.Approved)
+    : allArtistArtworks;
+  const publicIds = new Set(artistArtworks.map((art) => art.id));
+  const artistExhibitions = exhibitions.filter(
+    (item) =>
+      (!isViewer || item.status === ExhibitionStatus.Active) &&
+      (item.curatorId === id || item.artworkIds.some((artId) => publicIds.has(artId))),
+  );
 
   if (!artist) return <main className="page-shell p-10">艺术家不存在</main>;
 

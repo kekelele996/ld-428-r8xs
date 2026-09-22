@@ -1,4 +1,9 @@
-import { ArtworkStatus, ExhibitionStatus, Medium } from '../../types/enums';
+import {
+  ArtworkReviewStatus,
+  ArtworkStatus,
+  ExhibitionStatus,
+  Medium,
+} from '../../types/enums';
 
 export const seedArtists = [
   {
@@ -28,6 +33,9 @@ export const seedArtworks = [
     artistId: 'artist-lin',
     exhibitionIds: ['exh-001'],
     status: ArtworkStatus.Published,
+    reviewStatus: ArtworkReviewStatus.Approved,
+    reviewComment: '材料表达完整，准予上展。',
+    activeExhibitionId: 'exh-001',
     views: 4820,
     likes: 318,
     bookmarks: 92,
@@ -38,13 +46,14 @@ export const seedExhibitions = [
   {
     title: '材料仍在说话',
     description: '围绕城市更新、人工光和材料记忆展开的小型群展。',
-    curatorId: 'artist-lin',
+    curatorId: 'user-curator',
     startDate: '2026-05-01',
-    endDate: '2026-08-15',
+    endDate: '2026-12-31',
     type: 'Group',
     coverUrl: 'https://images.unsplash.com/photo-1545987796-200677ee1011?auto=format&fit=crop&w=1400&q=80',
-    artworkIds: ['art-001'],
+    artworkIds: [],
     status: ExhibitionStatus.Active,
+    reviewComment: '',
     visitors: 12840,
   },
 ];

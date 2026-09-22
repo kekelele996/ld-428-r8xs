@@ -9,7 +9,7 @@ export class ArtistController {
 
   @Get()
   async list() {
-    return this.artistService.list();
+    return ok(await this.artistService.list());
   }
 
   @Get(':id')
