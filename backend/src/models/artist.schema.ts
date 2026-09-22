@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type ArtistDocument = HydratedDocument<Artist>;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, toJSON: { virtuals: true, versionKey: false } })
 export class Artist {
   @Prop({ required: true, index: true })
   userId!: string;

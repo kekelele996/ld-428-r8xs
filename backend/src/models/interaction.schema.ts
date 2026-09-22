@@ -5,7 +5,7 @@ import { InteractionType } from '../types/enums';
 
 export type InteractionDocument = HydratedDocument<Interaction>;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, toJSON: { virtuals: true, versionKey: false } })
 export class Interaction {
   @Prop({ required: true })
   userId!: string;

@@ -4,6 +4,7 @@ import { ArtistProfile } from '../pages/ArtistProfile';
 import { ArtworkDetail } from '../pages/ArtworkDetail';
 import { ExhibitionDetail } from '../pages/ExhibitionDetail';
 import { Gallery } from '../pages/Gallery';
+import { ReviewCenter } from '../pages/ReviewCenter';
 import { Studio } from '../pages/Studio';
 import { RequireRole } from './guards';
 
@@ -18,6 +19,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireRole allow={['Admin', 'Curator', 'Artist']}>
         <Studio />
+      </RequireRole>
+    ),
+  },
+  {
+    path: '/review',
+    element: (
+      <RequireRole allow={['Admin']}>
+        <ReviewCenter />
       </RequireRole>
     ),
   },

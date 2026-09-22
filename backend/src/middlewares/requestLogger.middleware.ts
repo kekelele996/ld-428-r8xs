@@ -7,7 +7,7 @@ import { logger } from '../utils/logger';
 export class RequestLoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const started = Date.now();
-    res.on('finish', () => logger.info(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - started}ms`));
+    res.on('finish', () => logger.info(`${req.method} ${req.originalUrl.split('?')[0]} ${res.statusCode} ${Date.now() - started}ms`));
     next();
   }
 }

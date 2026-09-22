@@ -1,5 +1,8 @@
 export enum ArtworkStatus {
   Draft = 'Draft',
+  PendingReview = 'PendingReview',
+  Approved = 'Approved',
+  Rejected = 'Rejected',
   Published = 'Published',
   Sold = 'Sold',
   Archived = 'Archived',
@@ -20,6 +23,8 @@ export enum Medium {
 
 export enum ExhibitionStatus {
   Planning = 'Planning',
+  PendingReview = 'PendingReview',
+  Rejected = 'Rejected',
   Active = 'Active',
   Ended = 'Ended',
   Archived = 'Archived',
@@ -42,4 +47,25 @@ export enum ExhibitionType {
 export enum ArtistStatus {
   Active = 'Active',
   Inactive = 'Inactive',
+}
+
+export enum ReviewResult {
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+  Flagged = 'Flagged',
+}
+
+export enum ReviewAction {
+  ArtworkSubmitted = 'ArtworkSubmitted',
+  ArtworkApproved = 'ArtworkApproved',
+  ArtworkRejected = 'ArtworkRejected',
+  ArtworkFlagged = 'ArtworkFlagged',
+  ArtworkOverturned = 'ArtworkOverturned',
+  ArtworkTakenDown = 'ArtworkTakenDown',
+  ArtworkRemovedFromExhibition = 'ArtworkRemovedFromExhibition',
+  ExhibitionSubmitted = 'ExhibitionSubmitted',
+  ExhibitionApproved = 'ExhibitionApproved',
+  ExhibitionRejected = 'ExhibitionRejected',
+  ExhibitionFlagged = 'ExhibitionFlagged',
+  ExhibitionOverturned = 'ExhibitionOverturned',
 }

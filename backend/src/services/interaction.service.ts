@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Interaction, InteractionDocument } from '../models/interaction.schema';
 import { ArtworkService } from './artwork.service';
 import { InteractionType } from '../types/enums';
+import { withId, withIds } from '../utils/normalize';
 
 @Injectable()
 export class InteractionService {
@@ -14,7 +15,8 @@ export class InteractionService {
   ) {}
 
   async list(query: { targetType?: string; targetId?: string }) {
-    return this.interactionModel.find(query).sort({ createdAt: -1 }).lean();
+    const docs = await this.interactionModel.find(query).sort({ createdAt: -1 }).lean();
+    return withIds(docs);
   }
 
   async create(input: Partial<Interaction>) {
@@ -23,6 +25,6 @@ export class InteractionService {
       if (input.type === InteractionType.Like) await this.artworkService.incrementMetric(input.targetId, 'likes');
       if (input.type === InteractionType.Bookmark) await this.artworkService.incrementMetric(input.targetId, 'bookmarks');
     }
-    return saved;
+    return withId(saved.toObject());
   }
 }

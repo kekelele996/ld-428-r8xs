@@ -3,20 +3,24 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { Artist, ArtistDocument } from '../models/artist.schema';
+import { withId, withIds } from '../utils/normalize';
 
 @Injectable()
 export class ArtistService {
   constructor(@InjectModel(Artist.name) private readonly artistModel: Model<ArtistDocument>) {}
 
   async list() {
-    return this.artistModel.find().sort({ followerCount: -1 }).lean();
+    const docs = await this.artistModel.find().sort({ followerCount: -1 }).lean();
+    return withIds(docs);
   }
 
   async find(id: string) {
-    return this.artistModel.findById(id).lean();
+    const doc = await this.artistModel.findById(id).lean();
+    return withId(doc);
   }
 
   async create(input: Partial<Artist>) {
-    return this.artistModel.create(input);
+    const saved = await this.artistModel.create(input);
+    return withId(saved.toObject());
   }
 }

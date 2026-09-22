@@ -5,7 +5,7 @@ import { ArtworkStatus, Medium } from '../types/enums';
 
 export type ArtworkDocument = HydratedDocument<Artwork>;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, toJSON: { virtuals: true, versionKey: false } })
 export class Artwork {
   @Prop({ required: true })
   title!: string;
@@ -37,11 +37,16 @@ export class Artwork {
   @Prop({ required: true, index: true })
   artistId!: string;
 
+  /** 当前仍在占用该作品的展览（Planning/PendingReview/Active），随撤出操作同步清理 */
   @Prop({ type: [String], default: [] })
   exhibitionIds!: string[];
 
   @Prop({ enum: ArtworkStatus, default: ArtworkStatus.Draft, index: true })
   status!: ArtworkStatus;
+
+  /** 最近一次审核/下架决定的原因，页面刷新后仍可展示 */
+  @Prop({ default: '' })
+  reviewReason!: string;
 
   @Prop()
   price?: number;

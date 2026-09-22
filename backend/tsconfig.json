@@ -15,5 +15,6 @@
     "skipLibCheck": true,
     "noImplicitAny": false
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/smoke.e2e.ts", "src/**/*.spec.ts", "dist"]
 }

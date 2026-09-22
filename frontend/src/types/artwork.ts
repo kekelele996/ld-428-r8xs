@@ -12,8 +12,11 @@ export interface Artwork {
   videoUrl?: string;
   tags: string[];
   artistId: string;
+  /** 当前仍占用该作品的进行中展览（Planning/PendingReview/Active） */
   exhibitionIds: string[];
   status: ArtworkStatus;
+  /** 最近一次审核 / 下架决定的原因 */
+  reviewReason?: string;
   price?: number;
   views: number;
   likes: number;

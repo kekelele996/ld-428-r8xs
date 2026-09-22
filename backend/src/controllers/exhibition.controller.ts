@@ -1,15 +1,21 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 
 import { ExhibitionService } from '../services/exhibition.service';
+import { ReviewService } from '../services/review.service';
 import { ok } from '../utils/response';
+import type { RequestUser } from '../types/interfaces';
 
-@Controller('api/exhibitions')
+@Controller('exhibitions')
 export class ExhibitionController {
-  constructor(private readonly exhibitionService: ExhibitionService) {}
+  constructor(
+    private readonly exhibitionService: ExhibitionService,
+    private readonly reviewService: ReviewService,
+  ) {}
 
   @Get()
   async list() {
-    return this.exhibitionService.list();
+    return ok(await this.exhibitionService.list());
   }
 
   @Get(':id')
@@ -18,17 +24,34 @@ export class ExhibitionController {
   }
 
   @Post()
-  async create(@Body() body: Record<string, unknown>) {
-    return ok(await this.exhibitionService.create(body));
+  async create(@Body() body: Record<string, unknown>, @Req() req: Request & { user: RequestUser }) {
+    return ok(await this.exhibitionService.create(body, req.user.id));
   }
 
-  @Patch(':id/artworks')
-  async addArtwork(@Param('id') id: string, @Body('artworkId') artworkId: string) {
-    return ok(await this.exhibitionService.addArtwork(id, artworkId));
+  /** 策展人挑选已通过审核的作品加入展览 */
+  @Post(':id/artworks')
+  async addArtwork(
+    @Param('id') id: string,
+    @Body() body: { artworkId?: string },
+    @Req() req: Request & { user: RequestUser },
+  ) {
+    return ok(await this.exhibitionService.addArtwork(id, body.artworkId ?? '', req.user.id, req.user.role));
   }
 
-  @Patch(':id/publish')
-  async publish(@Param('id') id: string) {
-    return ok(await this.exhibitionService.publish(id));
+  /** 策展阶段主动移除作品（留痕） */
+  @Delete(':id/artworks/:artworkId')
+  async removeArtwork(
+    @Param('id') id: string,
+    @Param('artworkId') artworkId: string,
+    @Body() body: { reason?: string },
+    @Req() req: Request & { user: RequestUser },
+  ) {
+    return ok(await this.exhibitionService.removeArtwork(id, artworkId, body.reason ?? '', req.user.id, req.user.role));
+  }
+
+  /** 策展人送审展览 */
+  @Post(':id/submit')
+  async submit(@Param('id') id: string, @Body() body: { comment?: string }, @Req() req: Request & { user: RequestUser }) {
+    return ok(await this.reviewService.submitExhibition(id, body.comment ?? '', req.user));
   }
 }

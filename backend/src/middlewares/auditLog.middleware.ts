@@ -15,7 +15,7 @@ export class AuditLogMiddleware implements NestMiddleware {
         void this.auditModel.create({
           actorId: req.user?.id ?? 'anonymous',
           action: `${req.method} ${res.statusCode}`,
-          path: req.path,
+          path: req.originalUrl.split('?')[0],
           method: req.method,
         });
       }

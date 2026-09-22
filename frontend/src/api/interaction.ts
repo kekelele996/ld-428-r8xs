@@ -2,13 +2,17 @@ import { apiPaths } from '../constants/apiPaths';
 import type { Interaction, InteractionTarget } from '../types/interaction';
 import { InteractionType } from '../types/enums';
 import { interactions } from '../utils/mockData';
+import { isOffline } from '../utils/apiError';
 import { request } from '../utils/request';
 
 export async function fetchInteractions(targetType: InteractionTarget, targetId: string): Promise<Interaction[]> {
   try {
     return await request<Interaction[]>(`${apiPaths.interactions}?targetType=${targetType}&targetId=${targetId}`);
-  } catch {
-    return interactions.filter((item) => item.targetType === targetType && item.targetId === targetId);
+  } catch (error) {
+    if (isOffline(error)) {
+      return interactions.filter((item) => item.targetType === targetType && item.targetId === targetId);
+    }
+    throw error;
   }
 }
 

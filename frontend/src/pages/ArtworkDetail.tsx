@@ -5,19 +5,26 @@ import { Link, useParams } from 'react-router-dom';
 import { ArtworkCard } from '../components/common/ArtworkCard';
 import { CommentSection } from '../components/common/CommentSection';
 import { InteractionBar } from '../components/common/InteractionBar';
+import { ReviewReasonBanner } from '../components/common/ReviewReasonBanner';
 import { UserAvatar } from '../components/common/UserAvatar';
 import { useArtistStore } from '../stores/artistStore';
 import { useArtworkStore } from '../stores/artworkStore';
+import { useSessionStore } from '../stores/sessionStore';
+import { ArtworkStatus } from '../types/enums';
 import { formatArtworkSize } from '../utils/formatArtworkSize';
 
 export function ArtworkDetail() {
   const { id = '' } = useParams();
   const [zoomed, setZoomed] = useState(false);
-  const { artworks, loadArtworks } = useArtworkStore();
+  const [takedownOpen, setTakedownOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
+  const { artworks, loadArtworks, takeDown } = useArtworkStore();
   const { artists, loadArtists } = useArtistStore();
+  const role = useSessionStore((state) => state.user.role);
 
   useEffect(() => {
-    void Promise.all([loadArtworks(), loadArtists()]);
+    void Promise.all([loadArtworks(true), loadArtists()]);
   }, [loadArtworks, loadArtists]);
 
   const artwork = artworks.find((item) => item.id === id);
@@ -25,13 +32,26 @@ export function ArtworkDetail() {
   const related = artwork ? artworks.filter((item) => item.artistId === artwork.artistId && item.id !== artwork.id) : [];
 
   if (!artwork) {
-    return <main className="page-shell p-10">作品不存在</main>;
+    return <main className="page-shell p-10">作品不存在或尚未公开</main>;
   }
+
+  const isPublic = artwork.status === ArtworkStatus.Published || artwork.status === ArtworkStatus.Sold;
+  if (role === 'Viewer' && !isPublic) {
+    return <main className="page-shell p-10">作品不存在或尚未公开</main>;
+  }
+
+  const canTakeDown =
+    (role === 'Admin' || role === 'Curator') && artwork.status !== ArtworkStatus.Archived;
 
   return (
     <main className="page-shell">
       <div className="mx-auto max-w-7xl px-6 py-6">
         <Link to="/gallery" className="text-sm text-ink/60 hover:text-clay">返回画廊</Link>
+        {artwork.reviewReason && (
+          <div className="mt-4">
+            <ReviewReasonBanner kind="artwork" status={artwork.status} reason={artwork.reviewReason} />
+          </div>
+        )}
         <section className="mt-6 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
           <button onClick={() => setZoomed((value) => !value)} className="relative overflow-hidden bg-ink">
             <img className={`w-full object-cover transition duration-300 ${zoomed ? 'h-[760px] scale-125' : 'h-[620px]'}`} src={artwork.imageUrls[0]} alt={artwork.title} />
@@ -50,7 +70,51 @@ export function ArtworkDetail() {
               <div><dt className="text-ink/50">材质</dt><dd className="mt-1 font-semibold">{artwork.materials}</dd></div>
               <div><dt className="text-ink/50">价格</dt><dd className="mt-1 font-semibold">{artwork.price ? `¥${artwork.price.toLocaleString()}` : '未定价'}</dd></div>
             </dl>
-            <InteractionBar artwork={artwork} />
+            {isPublic && <InteractionBar artwork={artwork} />}
+            {!isPublic && (
+              <p className="border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                作品尚未公开展出，观众暂时无法互动。
+              </p>
+            )}
+            {canTakeDown && (
+              <div className="border border-clay/30 bg-clay/5 p-4">
+                {!takedownOpen ? (
+                  <button onClick={() => setTakedownOpen(true)} className="text-sm font-semibold text-clay hover:underline">
+                    下架作品（将自动撤出所有进行中展览）
+                  </button>
+                ) : (
+                  <form
+                    onSubmit={async (event) => {
+                      event.preventDefault();
+                      setError('');
+                      try {
+                        await takeDown(id, reason);
+                        setTakedownOpen(false);
+                        setReason('');
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : '下架失败');
+                      }
+                    }}
+                    className="space-y-3"
+                  >
+                    <label className="block text-sm font-semibold text-ink/70">下架原因（必填）</label>
+                    <textarea
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      required
+                      rows={3}
+                      className="w-full border border-ink/20 bg-rice px-3 py-2 text-sm outline-none focus:border-clay"
+                      placeholder="例如：版权争议 / 内容违规"
+                    />
+                    {error && <p className="text-sm text-clay">{error}</p>}
+                    <div className="flex gap-2">
+                      <button type="submit" className="bg-clay px-4 py-2 text-sm font-semibold text-rice hover:opacity-90">确认下架</button>
+                      <button type="button" onClick={() => setTakedownOpen(false)} className="border border-ink/20 px-4 py-2 text-sm">取消</button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
             <CommentSection artworkId={artwork.id} />
           </aside>
         </section>

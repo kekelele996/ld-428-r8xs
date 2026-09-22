@@ -7,21 +7,31 @@ import { UserAvatar } from '../components/common/UserAvatar';
 import { useArtistStore } from '../stores/artistStore';
 import { useArtworkStore } from '../stores/artworkStore';
 import { useExhibitionStore } from '../stores/exhibitionStore';
+import { useSessionStore } from '../stores/sessionStore';
 import { useEffect } from 'react';
+import { ArtworkStatus, ExhibitionStatus } from '../types/enums';
 
 export function ArtistProfile() {
   const { id = '' } = useParams();
   const { artists, loadArtists } = useArtistStore();
   const { artworks, loadArtworks } = useArtworkStore();
   const { exhibitions, loadExhibitions } = useExhibitionStore();
+  const role = useSessionStore((state) => state.user.role);
 
   useEffect(() => {
-    void Promise.all([loadArtists(), loadArtworks(), loadExhibitions()]);
+    void Promise.all([loadArtists(), loadArtworks(true), loadExhibitions(true)]);
   }, [loadArtists, loadArtworks, loadExhibitions]);
 
+  const isViewer = role === 'Viewer';
   const artist = artists.find((item) => item.id === id);
-  const artistArtworks = artworks.filter((item) => item.artistId === id);
-  const artistExhibitions = exhibitions.filter((item) => item.curatorId === id || item.artworkIds.some((artId) => artistArtworks.some((art) => art.id === artId)));
+  const artistArtworks = artworks.filter(
+    (item) => item.artistId === id && (!isViewer || item.status === ArtworkStatus.Published || item.status === ArtworkStatus.Sold),
+  );
+  const artistExhibitions = exhibitions.filter(
+    (item) =>
+      (!isViewer || item.status === ExhibitionStatus.Active || item.status === ExhibitionStatus.Ended) &&
+      (item.curatorId === id || item.activeArtworkIds.some((artId) => artistArtworks.some((art) => art.id === artId))),
+  );
 
   if (!artist) return <main className="page-shell p-10">艺术家不存在</main>;
 

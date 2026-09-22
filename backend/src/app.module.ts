@@ -4,8 +4,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { databaseConfig } from './config/database.config';
 import { ArtistController } from './controllers/artist.controller';
 import { ArtworkController } from './controllers/artwork.controller';
+import { AuthController } from './controllers/auth.controller';
 import { ExhibitionController } from './controllers/exhibition.controller';
 import { InteractionController } from './controllers/interaction.controller';
+import { ReviewController } from './controllers/review.controller';
 import { Artist, ArtistSchema } from './models/artist.schema';
 import { Artwork, ArtworkSchema } from './models/artwork.schema';
 import { AuditLog, AuditLogSchema } from './models/auditLog.schema';
@@ -17,6 +19,7 @@ import { ArtworkService } from './services/artwork.service';
 import { ExhibitionService } from './services/exhibition.service';
 import { InteractionService } from './services/interaction.service';
 import { ReviewService } from './services/review.service';
+import { WithdrawalService } from './services/withdrawal.service';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { AuditLogMiddleware } from './middlewares/auditLog.middleware';
 import { ContentReviewMiddleware } from './middlewares/contentReview.middleware';
@@ -35,11 +38,13 @@ import { RequestLoggerMiddleware } from './middlewares/requestLogger.middleware'
       { name: AuditLog.name, schema: AuditLogSchema },
     ]),
   ],
-  controllers: [ArtworkController, ExhibitionController, ArtistController, InteractionController],
-  providers: [ArtworkService, ExhibitionService, ArtistService, InteractionService, ReviewService],
+  controllers: [ArtworkController, ExhibitionController, ArtistController, InteractionController, ReviewController, AuthController],
+  providers: [ArtworkService, ExhibitionService, ArtistService, InteractionService, ReviewService, WithdrawalService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestLoggerMiddleware, AuthMiddleware, RbacMiddleware, ContentReviewMiddleware, AuditLogMiddleware).forRoutes('*');
+    consumer
+      .apply(RequestLoggerMiddleware, AuthMiddleware, RbacMiddleware, ContentReviewMiddleware, AuditLogMiddleware)
+      .forRoutes('*');
   }
 }

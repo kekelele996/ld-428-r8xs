@@ -14,8 +14,9 @@ services:
   backend:
     build:
       context: ./backend
-    env_file:
-      - .env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/art_gallery
+      JWT_SECRET: ${JWT_SECRET:-art-gallery-dev-secret}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
